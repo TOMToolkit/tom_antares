@@ -15,6 +15,7 @@ class TestANTARESBrokerClass(TestCase):
         self.test_target = Target.objects.create(name='ZTF20achooum')
         self.loci = [LocusFactory.create() for i in range(0, 5)]
         self.locus = self.loci[0]  # Get an individual locus for testing
+        self.locus_id = 'ANT2025v5k9wxb6vzbe'
         self.tag = 'in_m31'
 
     def test_boilerplate(self):
@@ -62,3 +63,10 @@ class TestANTARESBrokerClass(TestCase):
         # NOTE: The string is hardcoded as a sanity check to ensure that the string is reviewed if it changes
         self.assertEqual(generic_alert.url, f'https://antares.noirlab.edu/loci/{self.locus.locus_id}')
         self.assertEqual(generic_alert.timestamp, datetime(2020, 10, 12, tzinfo=timezone.utc))
+
+    @mock.patch('tom_antares.antares.antares_client')
+    def test_fetch_alerts_by_locus_id(self, mock_client):
+        """Test that a query by locus identifier parses the alert properly"""
+        mock_client.search.search.side_effect = lambda loci: iter(self.loci)
+        alerts = ANTARESBroker().fetch_alerts({'antid': 'ANT2025v5k9wxb6vzbe'})
+        self.assertEqual(len(list(alerts)), 1)

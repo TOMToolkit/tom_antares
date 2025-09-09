@@ -14,6 +14,13 @@ Install the module into your TOM environment:
 
     pip install tom-antares
 
+Include the app in your `INSTALLED_APPS` in your TOM's `settings.py`:
+
+    INSTALLED_APPS = [
+        ...
+        'tom_antares',
+    ]
+
 Add `tom_antares.antares.ANTARESBroker` to the `TOM_ALERT_CLASSES` in your TOM's
 `settings.py`:
 

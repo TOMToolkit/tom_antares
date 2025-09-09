@@ -2,8 +2,9 @@ import logging
 
 import antares_client
 import marshmallow
-from antares_client.search import get_available_tags, get_by_ztf_object_id
+from antares_client.search import get_available_tags, get_by_ztf_object_id, get_by_id
 from astropy.time import Time, TimezoneInfo
+from datetime import datetime, timezone
 from crispy_forms.layout import HTML, Div, Fieldset, Layout
 from django import forms
 from tom_alerts.alerts import GenericAlert, GenericBroker, GenericQueryForm
@@ -62,6 +63,13 @@ class ANTARESBrokerForm(GenericQueryForm):
             attrs={'placeholder': 'ZTF object id, e.g. ZTF19aapreis'}
         ),
     )
+    antid = forms.CharField(
+        required=False,
+        label='',
+        widget=forms.TextInput(
+            attrs={'placeholder': 'ANTARES locus id, e.g. ANT2020m4pja'}
+        ),
+    )
     tag = forms.MultipleChoiceField(required=False, choices=get_tag_choices)
     nobs__gt = forms.IntegerField(
         required=False,
@@ -102,6 +110,10 @@ class ANTARESBrokerForm(GenericQueryForm):
         label='Max date of alert detection',
         widget=forms.TextInput(attrs={'placeholder': 'Date (MJD)'}),
         min_value=0.0,
+    )
+    last_day = forms.BooleanField(
+        required=False,
+        label='Last 24hrs'
     )
     mag__min = forms.FloatField(
         required=False,
@@ -148,10 +160,23 @@ class ANTARESBrokerForm(GenericQueryForm):
             '''
             ),
             HTML('<hr/>'),
-            HTML('<p style="color:blue;font-size:30px">Query by object name</p>'),
-            Fieldset('ZTF object ID', 'ztfid'),
+            HTML('<h3>Query by object name</h3>'),
+            Fieldset(
+                'Object ID',
+                Div(
+                    Div(
+                        'ztfid',
+                        css_class='col',
+                    ),
+                    Div(
+                        'antid',
+                        css_class='col'
+                    ),
+                    css_class='form-row',
+                )
+            ),
             HTML('<hr/>'),
-            HTML('<p style="color:blue;font-size:30px">Simple query form</p>'),
+            HTML('<h3>Simple query form</h3>'),
             Fieldset(
                 'Alert timing',
                 Div(
@@ -161,6 +186,10 @@ class ANTARESBrokerForm(GenericQueryForm):
                     ),
                     Div(
                         'mjd__lt',
+                        css_class='col',
+                    ),
+                    Div(
+                        'last_day',
                         css_class='col',
                     ),
                     css_class='form-row',
@@ -206,7 +235,7 @@ class ANTARESBrokerForm(GenericQueryForm):
             Fieldset('View Tags', 'tag'),
             Fieldset('Max Alerts', 'max_alerts'),
             HTML('<hr/>'),
-            HTML('<p style="color:blue;font-size:30px">Advanced query</p>'),
+            HTML('<h3>Advanced query</h3>'),
             Fieldset('', 'esquery'),
             HTML(
                 '''
@@ -273,11 +302,17 @@ class ANTARESBrokerForm(GenericQueryForm):
         # Ensure using either a stream or the advanced search form
         if not (
             cleaned_data.get('ztfid')
+            or cleaned_data.get('antid')
             or cleaned_data.get('tag')
             or cleaned_data.get('esquery')
+            or (
+                cleaned_data.get('mjd_lt')
+                and cleaned_data.get('mjd_gt')
+            )
+            or cleaned_data.get('last_day')
         ):
             raise forms.ValidationError(
-                'Please either enter the ZTF ID, or select tag(s), or use the advanced search query.'
+                'Please either enter an ID, date range, select tag(s), or use the advanced search query.'
             )
 
         return cleaned_data
@@ -322,85 +357,110 @@ class ANTARESBroker(GenericBroker):
         ssr = parameters.get('sr')
         mjd_gt = parameters.get('mjd__gt')
         mjd_lt = parameters.get('mjd__lt')
+        last_day = parameters.get('last_day')
         mag_min = parameters.get('mag__min')
         mag_max = parameters.get('mag__max')
         elsquery = parameters.get('esquery')
         ztfid = parameters.get('ztfid')
+        antid = parameters.get('antid')
         max_alerts = parameters.get('max_alerts', 20)
-        if ztfid:
-            query = {
-                'query': {
-                    'bool': {'must': [{'match': {'properties.ztf_object_id': ztfid}}]}
-                }
-            }
-        elif elsquery:
-            query = elsquery
-        else:
-            filters = []
-
-            if nobs_gt or nobs_lt:
-                nobs_range = {'range': {'properties.num_mag_values': {}}}
-                if nobs_gt:
-                    nobs_range['range']['properties.num_mag_values']['gte'] = nobs_gt
-                if nobs_lt:
-                    nobs_range['range']['properties.num_mag_values']['lte'] = nobs_lt
-                filters.append(nobs_range)
-
-            if mjd_lt:
-                mjd_lt_range = {
-                    'range': {
-                        'properties.newest_alert_observation_time': {'lte': mjd_lt}
-                    }
-                }
-                filters.append(mjd_lt_range)
-
-            if mjd_gt:
-                mjd_gt_range = {
-                    'range': {
-                        'properties.oldest_alert_observation_time': {'gte': mjd_gt}
-                    }
-                }
-                filters.append(mjd_gt_range)
-
-            if mag_min or mag_max:
-                mag_range = {'range': {'properties.newest_alert_magnitude': {}}}
-                if mag_min:
-                    mag_range['range']['properties.newest_alert_magnitude'][
-                        'gte'
-                    ] = mag_min
-                if mag_max:
-                    mag_range['range']['properties.newest_alert_magnitude'][
-                        'lte'
-                    ] = mag_max
-                filters.append(mag_range)
-
-            if sra and ssr:  # TODO: add cross-field validation
-                ra_range = {'range': {'ra': {'gte': sra - ssr, 'lte': sra + ssr}}}
-                filters.append(ra_range)
-
-            if sdec and ssr:  # TODO: add cross-field validation
-                dec_range = {'range': {'dec': {'gte': sdec - ssr, 'lte': sdec + ssr}}}
-                filters.append(dec_range)
-
-            if tags:
-                filters.append({'terms': {'tags': tags}})
-
-            query = {'query': {'bool': {'filter': filters}}}
-
-        loci = antares_client.search.search(query)
-        #        if ztfid:
-        #            loci = get_by_ztf_object_id(ztfid)
         alerts = []
-        while len(alerts) < max_alerts:
+        if antid:
             try:
-                locus = next(loci)
-            except (marshmallow.exceptions.ValidationError, StopIteration):
-                break
-            alerts.append(self.alert_to_dict(locus))
+                locus = get_by_id(antid)
+            except antares_client.exceptions.AntaresException:
+                locus = None
+            if locus:
+                alerts.append(self.alert_to_dict(locus))
+        else:
+            if ztfid:
+                query = {
+                    'query': {
+                        'bool': {'must': [{'match': {'properties.ztf_object_id': ztfid}}]}
+                    }
+                }
+            elif elsquery:
+                query = elsquery
+            else:
+                filters = []
+
+                if nobs_gt or nobs_lt:
+                    nobs_range = {'range': {'properties.num_mag_values': {}}}
+                    if nobs_gt:
+                        nobs_range['range']['properties.num_mag_values']['gte'] = nobs_gt
+                    if nobs_lt:
+                        nobs_range['range']['properties.num_mag_values']['lte'] = nobs_lt
+                    filters.append(nobs_range)
+
+                if last_day:
+                    ut = Time(datetime.now(tz=timezone.utc), scale='utc')
+                    mjd_range = {
+                        'range': {
+                            'properties.newest_alert_observation_time': {
+                                'lte': ut.mjd,
+                                'gte': ut.mjd - 1.0,
+                            }
+                        }
+                    }
+                    filters.append(mjd_range)
+                    mjd_lt = ''
+                    mjd_gt = ''
+
+                if mjd_lt:
+                    mjd_lt_range = {
+                        'range': {
+                            'properties.newest_alert_observation_time': {'lte': mjd_lt}
+                        }
+                    }
+                    filters.append(mjd_lt_range)
+
+                if mjd_gt:
+                    mjd_gt_range = {
+                        'range': {
+                            'properties.oldest_alert_observation_time': {'gte': mjd_gt}
+                        }
+                    }
+                    filters.append(mjd_gt_range)
+
+                if mag_min or mag_max:
+                    mag_range = {'range': {'properties.newest_alert_magnitude': {}}}
+                    if mag_min:
+                        mag_range['range']['properties.newest_alert_magnitude'][
+                            'gte'
+                        ] = mag_min
+                    if mag_max:
+                        mag_range['range']['properties.newest_alert_magnitude'][
+                            'lte'
+                        ] = mag_max
+                    filters.append(mag_range)
+
+                if sra and ssr:  # TODO: add cross-field validation
+                    ra_range = {'range': {'ra': {'gte': sra - ssr, 'lte': sra + ssr}}}
+                    filters.append(ra_range)
+
+                if sdec and ssr:  # TODO: add cross-field validation
+                    dec_range = {'range': {'dec': {'gte': sdec - ssr, 'lte': sdec + ssr}}}
+                    filters.append(dec_range)
+
+                if tags:
+                    filters.append({'terms': {'tags': tags}})
+
+                query = {'query': {'bool': {'filter': filters}}}
+            loci = antares_client.search.search(query)
+            while len(alerts) < max_alerts:
+                try:
+                    locus = next(loci)
+                except (marshmallow.exceptions.ValidationError, StopIteration):
+                    break
+                alerts.append(self.alert_to_dict(locus))
         return iter(alerts)
 
     def fetch_alert(self, id_):
         alert = get_by_ztf_object_id(id_)
+        return alert
+
+    def fetch_locus(self, id_):
+        alert = get_by_id(id_)
         return alert
 
     # TODO: This function
