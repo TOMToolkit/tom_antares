@@ -30,7 +30,7 @@ setup(
     install_requires=[
         'tomtoolkit>=2.12,<3.0',
         'antares-client>=1.4,<2.0',
-        'elasticsearch-dsl>=7.3,<7.5'
+        'elasticsearch-dsl>=7.3,<8.19'
     ],
     extras_require={
         'test': ['factory_boy>=3.1,<3.4']
