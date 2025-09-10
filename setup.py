@@ -29,7 +29,7 @@ setup(
     setup_requires=['setuptools_scm', 'wheel'],
     install_requires=[
         'tomtoolkit>=2.12,<3.0',
-        'antares-client>=1.9,<2.0',
+        'antares-client>=1.10,<2.0',
         'elasticsearch-dsl>=7.3,<7.5'
     ],
     extras_require={
