@@ -19,7 +19,8 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Scientific/Engineering :: Astronomy',
         'Topic :: Scientific/Engineering :: Physics'
     ],
@@ -29,7 +30,7 @@ setup(
     setup_requires=['setuptools_scm', 'wheel'],
     install_requires=[
         'tomtoolkit>=2.12,<3.0',
-        'antares-client>=1.4,<2.0',
+        'antares-client>=1.10,<2.0',
         'elasticsearch-dsl>=7.3,<7.5'
     ],
     extras_require={
