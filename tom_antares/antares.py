@@ -7,8 +7,12 @@ from astropy.time import Time, TimezoneInfo
 from datetime import datetime, timezone
 from crispy_forms.layout import HTML, Div, Fieldset, Layout
 from django import forms
+
+from tom_dataservices.dataservices import BaseDataService
 from tom_alerts.alerts import GenericAlert, GenericBroker, GenericQueryForm
 from tom_targets.models import Target, TargetName
+
+from tom_antares.forms import AntaresForm
 
 logger = logging.getLogger(__name__)
 
@@ -324,12 +328,12 @@ class ANTARESBroker(GenericBroker):
 
     @classmethod
     def alert_to_dict(cls, locus):
-        '''
+        """
         Note: The ANTARES API returns a Locus object, which in the TOM Toolkit
         would otherwise be called an alert.
 
         This method serializes the Locus into a dict so that it can be cached by the view.
-        '''
+        """
         return {
             'locus_id': locus.locus_id,
             'ra': locus.ra,
@@ -501,3 +505,22 @@ class ANTARESBroker(GenericBroker):
             mag=alert['properties'].get('newest_alert_magnitude', ''),
             score=alert['alerts'][-1]['properties'].get('ztf_rb', ''),
         )
+
+
+class AntaresDataService(BaseDataService):
+    """
+        The ``AntaresDataService``
+    """
+    name = 'Antares'
+    info_url = 'https://nsf-noirlab.gitlab.io/csdc/antares/client/tutorial/searching.html'
+    # query_results_table = 'tom_dataservices/tns/partials/tns_query_results_table.html'
+
+    @classmethod
+    def get_form_class(cls):
+        return AntaresForm
+
+    def build_query_parameters(self, parameters, **kwargs):
+        return self.query_parameters
+
+    def query_service(self, data, **kwargs):
+        return self.query_results
