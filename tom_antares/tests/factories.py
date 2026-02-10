@@ -40,6 +40,36 @@ class AlertFactory(factory.Factory):
     })
 
 
+lightcurve_data = [{"time": "2019-04-01 11:39:44.999992",
+                    "alert_id": "ztf_upper_limit:ZTF19aapreis-820485935515",
+                    "ant_mjd": 58574.4859374999,
+                    "ant_survey": 2,
+                    "ant_ra": None,
+                    "ant_dec": None,
+                    "ant_passband": "R",
+                    "ant_mag": None,
+                    "ant_magerr": None,
+                    "ant_maglim": 17.7894001007,
+                    "ant_mag_corrected": None,
+                    "ant_magerr_corrected": None
+                    },
+
+                   {"time": "2019-04-20 10:42:10.995834",
+                    "alert_id": "ztf_candidate:839445965515015001",
+                    "ant_mjd": 58593.4459605999,
+                    "ant_survey": 1,
+                    "ant_ra": 314.2624159,
+                    "ant_dec": 14.2045147,
+                    "ant_passband": "R",
+                    "ant_mag": 18.2996997833,
+                    "ant_magerr": 0.0943880007,
+                    "ant_maglim": 19.2355995178,
+                    "ant_mag_corrected": None,
+                    "ant_magerr_corrected": None
+                    }
+                   ]
+
+
 class LocusFactory(factory.Factory):
     """Creates a test version of a Locus object
 
@@ -99,7 +129,7 @@ class LocusFactory(factory.Factory):
         # 'brightest_alert_observation_time':  # sample value: 59129.50674769981
     })
     tags = factory.List([])
-    lightcurve = DataFrame()
+    lightcurve = DataFrame(lightcurve_data)
     catalogs = factory.List([])
     # catalog_objects = factory.List([])
     # watch_list_ids = factory.List([])

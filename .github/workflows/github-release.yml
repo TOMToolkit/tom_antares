@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: ['3.10', '3.11', "3.12"]
         os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v2
@@ -20,10 +20,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install -e .[test]
-      - name: Run tests
-        run: python tom_antares/tests/run_tests.py
+          python -m pip install --upgrade pip
+          python -m pip install "poetry>=2.0,<3.0"
+          poetry env info  # display poetry's env info for debugging
+          poetry install  --with test
+      - name: Run Tests
+        run: poetry run python tom_antares/tests/run_tests.py
 
   create_release:
     runs-on: ubuntu-latest
@@ -34,5 +36,5 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        release_name: tom-antares ${{ github.ref }}
         draft: true

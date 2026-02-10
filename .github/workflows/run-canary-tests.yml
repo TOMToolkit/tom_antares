@@ -9,10 +9,12 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-        python-version: '3.9'
+        python-version: '3.12'
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip setuptools wheel
-        pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          python -m pip install "poetry>=2.0,<3.0"
+          poetry env info  # display poetry's env info for debugging
+          poetry install  --with test
     - name: Run Canary Tests
-      run: python tom_antares/tests/run_canary_tests.py
+      run: poetry run python tom_antares/tests/run_canary_tests.py
