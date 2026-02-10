@@ -518,7 +518,7 @@ class ANTARESBroker(GenericBroker):
                 TargetName(target=target, name=name)
                 for name in alert['properties']['survey']['ztf']['id']
             ]
-        if 'lsst' in alert['properties']['survey']:  #TODO: make sure this is how antares formats LSST alerts
+        if 'lsst' in alert['properties']['survey']:  # TODO: make sure this is how antares formats LSST alerts
             aliases += [
                 TargetName(target=target, name=name)
                 for name in alert['properties']['survey']['lsst']['dia_object_id']
