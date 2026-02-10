@@ -329,6 +329,12 @@ class ANTARESBrokerForm(GenericQueryForm):
 class ANTARESBroker(GenericBroker):
     name = 'ANTARES'
     form = ANTARESBrokerForm
+    surveys = {
+        1: 'ZTF',
+        2: 'ZTF',
+        3: 'DECAT',
+        4: 'LSST',
+    }  # see antares_devkit.models.SURVEYS
 
     @classmethod
     def alert_to_dict(cls, locus):
@@ -471,27 +477,59 @@ class ANTARESBroker(GenericBroker):
         alert = get_by_id(id_)
         return alert
 
-    # TODO: This function
     def process_reduced_data(self, target, alert=None):
-        pass
+        if alert is None:
+            return
+
+        for datum in alert['alerts']:
+            value = {
+                'limit': datum['properties']['ant_maglim'],
+                'filter': datum['properties']['ant_passband'],
+            }
+            if 'ant_mag' in datum['properties']:
+                value['magnitude'] = datum['properties']['ant_mag']
+            if 'ant_magerr' in datum['properties']:
+                value['error'] = datum['properties']['ant_magerr']
+            ReducedDatum.objects.get_or_create(
+                target=target,
+                timestamp=Time(datum['properties']['ant_mjd'], format='mjd').to_datetime(timezone=TimezoneInfo()),
+                data_type='photometry',
+                source_name=f"{self.surveys[datum['properties']['ant_survey']]} (ANTARES)",
+                value=value,
+            )
 
     def to_target(self, alert: dict) -> Tuple[Target, Dict[str, str], List[str]]:
         """Create a target and aliases from an alert"""
         target = Target.objects.create(
-            name=alert['properties']['ztf_object_id'],
+            name=alert['locus_id'],
             type='SIDEREAL',
             ra=alert['ra'],
             dec=alert['dec'],
         )
-        antares_name = TargetName(target=target, name=alert['locus_id'])
-        aliases = [antares_name]
+        aliases = self.aliases_from_locus(alert, target)
+        return target, {}, aliases
+
+    def aliases_from_locus(self, alert, target):
+        aliases = []
+        if target.name != alert['locus_id']:
+            aliases.append(TargetName(target=target, name=alert['locus_id']))
+        if 'ztf' in alert['properties']['survey']:
+            aliases += [
+                TargetName(target=target, name=name)
+                for name in alert['properties']['survey']['ztf']['id']
+            ]
+        if 'lsst' in alert['properties']['survey']:  # TODO: make sure this is how antares formats LSST alerts
+            aliases += [
+                TargetName(target=target, name=name)
+                for name in alert['properties']['survey']['lsst']['dia_object_id']
+            ]
         if alert['properties'].get(
             'horizons_targetname'
-        ):  # TODO: review if any other target names need to be created
+        ):
             aliases.append(
-                TargetName(name=alert['properties'].get('horizons_targetname'))
+                TargetName(target=target, name=alert['properties'].get('horizons_targetname'))
             )
-        return target, {}, aliases
+        return aliases
 
     def to_generic_alert(self, alert):
         url = f'{ANTARES_BASE_URL}/loci/{alert["locus_id"]}'
@@ -717,7 +755,7 @@ class AntaresDataService(DataService):
 
             reduced_datum, __ = ReducedDatum.objects.get_or_create(
                 target=target,
-                timestamp=Time(datum['time'], format='iso', scale='utc').datetime,
+                timestamp=Time(datum['time'], format='iso', scale='utc').to_datetime(timezone=TimezoneInfo()),
                 data_type=data_type,
                 source_name='Antares',
                 value=datum_details
