@@ -2635,14 +2635,14 @@ files = [
 
 [[package]]
 name = "tomtoolkit"
-version = "2.31.0"
+version = "2.31.1"
 description = "TOM Toolkit and base modules"
 optional = false
 python-versions = "<3.14,>=3.10.0"
 groups = ["main"]
 files = [
-    {file = "tomtoolkit-2.31.0-py3-none-any.whl", hash = "sha256:ad624323331f6fe93d775c3110633b6b91fca4663a69026e0e3ddb004e430f78"},
-    {file = "tomtoolkit-2.31.0.tar.gz", hash = "sha256:9b9b89698606a92a3e66f97e651dc3d2d13966f8135b1b38bbe86738ee7621f4"},
+    {file = "tomtoolkit-2.31.1-py3-none-any.whl", hash = "sha256:0aecd5c8f98f099c4d5ba21cd19c900660b8f648b78de55cbc147380b777eb53"},
+    {file = "tomtoolkit-2.31.1.tar.gz", hash = "sha256:74025a7aa29eaabae4c420d2e67301d46366088fbe99de116d807a9b80781799"},
 ]
 
 [package.dependencies]
