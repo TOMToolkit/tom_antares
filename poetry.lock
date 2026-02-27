@@ -2635,14 +2635,14 @@ files = [
 
 [[package]]
 name = "tomtoolkit"
-version = "2.31.0"
+version = "2.31.2"
 description = "TOM Toolkit and base modules"
 optional = false
 python-versions = "<3.14,>=3.10.0"
 groups = ["main"]
 files = [
-    {file = "tomtoolkit-2.31.0-py3-none-any.whl", hash = "sha256:ad624323331f6fe93d775c3110633b6b91fca4663a69026e0e3ddb004e430f78"},
-    {file = "tomtoolkit-2.31.0.tar.gz", hash = "sha256:9b9b89698606a92a3e66f97e651dc3d2d13966f8135b1b38bbe86738ee7621f4"},
+    {file = "tomtoolkit-2.31.2-py3-none-any.whl", hash = "sha256:3503e6af498f4b6f58322c3506bd1198230811f161754095f919b58737880a21"},
+    {file = "tomtoolkit-2.31.2.tar.gz", hash = "sha256:3f8fc4cc2c8250df6fa534ba367316752583b2817f7d3a9f675c643c63f02fb0"},
 ]
 
 [package.dependencies]
@@ -2651,7 +2651,7 @@ astropy = {version = ">=5.3.3,<7", markers = "python_version >= \"3.10\""}
 astroquery = "<1"
 beautifulsoup4 = "<5"
 crispy-bootstrap4 = ">=2023.1,<2024.11"
-cryptography = "<=46"
+cryptography = "<=47"
 django = "<5"
 django-bootstrap4 = ">3,<25"
 django-contrib-comments = ">=2.0,<3.0"
@@ -2668,7 +2668,7 @@ fits2image = ">=0.4,<0.5"
 importlib-resources = ">=6.4.5,<6.5.0"
 markdown = "<4"
 numpy = ">1.24,<2.2"
-pillow = ">9.2,<12.0"
+pillow = ">9.2,<13.0"
 plotly = "<6"
 python-dateutil = "<3"
 requests = "<3"
