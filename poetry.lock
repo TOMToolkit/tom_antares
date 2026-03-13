@@ -2635,14 +2635,14 @@ files = [
 
 [[package]]
 name = "tomtoolkit"
-version = "2.31.0"
+version = "2.31.3"
 description = "TOM Toolkit and base modules"
 optional = false
 python-versions = "<3.14,>=3.10.0"
 groups = ["main"]
 files = [
-    {file = "tomtoolkit-2.31.0-py3-none-any.whl", hash = "sha256:ad624323331f6fe93d775c3110633b6b91fca4663a69026e0e3ddb004e430f78"},
-    {file = "tomtoolkit-2.31.0.tar.gz", hash = "sha256:9b9b89698606a92a3e66f97e651dc3d2d13966f8135b1b38bbe86738ee7621f4"},
+    {file = "tomtoolkit-2.31.3-py3-none-any.whl", hash = "sha256:f030e5931a9925e50a6eebdffda4527886959e574a4179c2c9db6c91ebf3ab5a"},
+    {file = "tomtoolkit-2.31.3.tar.gz", hash = "sha256:b7f3598928123798cf2f65ff3983f045305297d4f48c1271d986cf9d81ea268b"},
 ]
 
 [package.dependencies]
@@ -2651,8 +2651,8 @@ astropy = {version = ">=5.3.3,<7", markers = "python_version >= \"3.10\""}
 astroquery = "<1"
 beautifulsoup4 = "<5"
 crispy-bootstrap4 = ">=2023.1,<2024.11"
-cryptography = "<=46"
-django = "<5"
+cryptography = "<=47"
+django = "<6"
 django-bootstrap4 = ">3,<25"
 django-contrib-comments = ">=2.0,<3.0"
 django-crispy-forms = ">=2.0,<3.0"
@@ -2668,7 +2668,7 @@ fits2image = ">=0.4,<0.5"
 importlib-resources = ">=6.4.5,<6.5.0"
 markdown = "<4"
 numpy = ">1.24,<2.2"
-pillow = ">9.2,<12.0"
+pillow = ">9.2,<13.0"
 plotly = "<6"
 python-dateutil = "<3"
 requests = "<3"
