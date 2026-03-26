@@ -40,12 +40,14 @@ class AntaresForm(BaseQueryForm):
         label='RA',
         widget=forms.TextInput(attrs={'placeholder': 'RA (Degrees)'}),
         min_value=0.0,
+        max_value=360.
     )
     dec = forms.FloatField(
         required=False,
         label='Dec',
         widget=forms.TextInput(attrs={'placeholder': 'Dec (Degrees)'}),
         min_value=0.0,
+        max_value=90.,
     )
     sr = forms.FloatField(
         required=False,
