@@ -1,23 +1,23 @@
-import logging
 import json
-from typing import List, Tuple, Dict
+import logging
+from datetime import datetime, timezone
+from typing import Dict, List, Tuple
 
 import antares_client
 import marshmallow
-from antares_client.search import get_available_tags, get_by_ztf_object_id, get_by_id
+import numpy as np
+from antares_client.search import get_available_tags, get_by_id, get_by_ztf_object_id
 from astropy.time import Time, TimezoneInfo
-from datetime import datetime, timezone
 from crispy_forms.layout import HTML, Div, Fieldset, Layout
 from django import forms
-
-from tom_dataservices.dataservices import DataService, QueryServiceError
-from tom_antares import __version__
+from django.db import IntegrityError
 from tom_alerts.alerts import GenericAlert, GenericBroker, GenericQueryForm
+from tom_dataproducts.models import PhotometryReducedDatum
+from tom_dataservices.dataservices import DataService, QueryServiceError
 from tom_targets.models import Target, TargetName
-from tom_dataproducts.models import ReducedDatum
 
+from tom_antares import __version__
 from tom_antares.forms import AntaresForm
-import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -760,13 +760,29 @@ class AntaresDataService(DataService):
                 datum_details['limit'] = datum['ant_maglim']
             datum_details['filter'] = datum['ant_passband']
 
-            reduced_datum, _ = ReducedDatum.objects.get_or_create(
-                target=target,
-                timestamp=Time(datum['time'], format='iso', scale='utc').to_datetime(TimezoneInfo()),
-                data_type=data_type,
-                source_name=f"{self.surveys[datum['ant_survey']]} ({self.name})",
-                value=datum_details
-            )
+            try:
+                reduced_datum, _ = PhotometryReducedDatum.objects.get_or_create(
+                    target=target,
+                    timestamp=Time(
+                        datum["time"], format="iso", scale="utc"
+                    ).to_datetime(TimezoneInfo()),
+                    source_name=f"{self.surveys[datum['ant_survey']]} ({self.name})",
+                    brightness=datum_details.get("magnitude"),
+                    brightness_error=datum_details.get("error"),
+                    limit=datum_details.get("limit"),
+                    bandpass=datum_details["filter"],
+                )
+            except IntegrityError:
+                logger.warning(
+                    (
+                        "PhotometryReducedDatum already exists for target %s "
+                        "with time %s and bandpass %s. Skipping."
+                    ),
+                    target.name,
+                    datum["time"],
+                    datum_details["filter"],
+                )
+                continue
             reduced_datums.append(reduced_datum)
 
         return reduced_datums
