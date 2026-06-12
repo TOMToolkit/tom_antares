@@ -6,6 +6,7 @@
 import os
 import django
 from django.conf import settings
+from tom_common.default_settings import TOMTOOKIT_INSTALLED_APPS, TOMTOOKIT_MIDDLEWARE
 
 APP_NAME = 'tom_antares'  # the stand-alone app we are testing
 
@@ -25,31 +26,7 @@ def boot_django():
             }
         },
         TOM_NAME='Test TOM',
-        INSTALLED_APPS=(
-            'django.contrib.admin',
-            'django.contrib.auth',
-            'django.contrib.contenttypes',
-            'django.contrib.sessions',
-            'django.contrib.messages',
-            'django.contrib.staticfiles',
-            'django.contrib.sites',
-            'django_extensions',
-            'guardian',
-            'tom_common',
-            'django_comments',
-            'bootstrap4',
-            'crispy_forms',
-            'rest_framework',
-            'rest_framework.authtoken',
-            'django_filters',
-            'django_gravatar',
-            'tom_targets',
-            'tom_alerts',
-            'tom_observations',
-            'tom_dataproducts',
-            'tom_dataservices',
-            APP_NAME,  # defined above
-        ),
+        INSTALLED_APPS=TOMTOOKIT_INSTALLED_APPS+[APP_NAME],
         SITE_ID=1,
         EXTRA_FIELDS={},
         TIME_ZONE='UTC',
@@ -59,18 +36,7 @@ def boot_django():
             'observation_change_state': 'tom_common.hooks.observation_change_state',
             'data_product_post_upload': 'tom_dataproducts.hooks.data_product_post_upload'
         },
-        MIDDLEWARE=[
-            'django.middleware.security.SecurityMiddleware',
-            'django.contrib.sessions.middleware.SessionMiddleware',
-            'django.middleware.common.CommonMiddleware',
-            'django.middleware.csrf.CsrfViewMiddleware',
-            'django.contrib.auth.middleware.AuthenticationMiddleware',
-            'django.contrib.messages.middleware.MessageMiddleware',
-            'django.middleware.clickjacking.XFrameOptionsMiddleware',
-            'tom_common.middleware.Raise403Middleware',
-            'tom_common.middleware.ExternalServiceMiddleware',
-            'tom_common.middleware.AuthStrategyMiddleware',
-        ],
+        MIDDLEWARE=TOMTOOKIT_MIDDLEWARE,
         TEMPLATES=[
             {
                 'BACKEND': 'django.template.backends.django.DjangoTemplates',
