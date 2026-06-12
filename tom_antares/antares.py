@@ -1,19 +1,15 @@
 import json
 import logging
 from datetime import datetime, timezone
-from typing import Dict, List, Tuple
 
 import antares_client
-import marshmallow
 import numpy as np
 from antares_client.search import get_available_tags, get_by_id, get_by_ztf_object_id
 from astropy.time import Time, TimezoneInfo
-from crispy_forms.layout import HTML, Div, Fieldset, Layout
-from django import forms
 from django.db import IntegrityError
 from tom_dataproducts.models import PhotometryReducedDatum
 from tom_dataservices.dataservices import DataService, QueryServiceError
-from tom_targets.models import Target, TargetName
+from tom_targets.models import Target
 
 from tom_antares import __version__
 from tom_antares.forms import AntaresForm
