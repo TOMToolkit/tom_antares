@@ -21,14 +21,6 @@ Include the app in your `INSTALLED_APPS` in your TOM's `settings.py`:
         'tom_antares',
     ]
 
-Add `tom_antares.antares.ANTARESBroker` to the `TOM_ALERT_CLASSES` in your TOM's
-`settings.py`:
-
-    TOM_ALERT_CLASSES = [
-        ...
-        'tom_antares.antares.ANTARESBroker'
-    ]
-
 ## Running the tests
 
 In order to run the tests, run the following in your virtualenv:
