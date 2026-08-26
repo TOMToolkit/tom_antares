@@ -41,7 +41,7 @@ class AntaresDataService(DataService):
     """
         The ``AntaresDataService``
     """
-    name = 'Antares'
+    name = 'ANTARES'
     info_url = 'https://nsf-noirlab.gitlab.io/csdc/antares/client/tutorial/searching.html'
     app_version = __version__
     app_link = 'https://github.com/TOMToolkit/tom_antares'
@@ -275,7 +275,8 @@ class AntaresDataService(DataService):
                     timestamp=Time(
                         datum["time"], format="iso", scale="utc"
                     ).to_datetime(TimezoneInfo()),
-                    source_name=f"{self.surveys[datum['ant_survey']]} ({self.name})",
+                    telescope=self.surveys[datum['ant_survey']],
+                    source_name=self.name,
                     brightness=datum_details.get("magnitude"),
                     brightness_error=datum_details.get("error"),
                     limit=datum_details.get("limit"),
