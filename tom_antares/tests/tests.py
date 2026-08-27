@@ -8,7 +8,7 @@ from tom_targets.models import Target, TargetName
 
 class TestAntaresDataservice(TestCase):
     """
-    Test the functionality of the Antares Dataservice
+    Test the functionality of the AntaresDataService
     NOTE: to run these tests in your venv: python ./tom_antares/tests/run_tests.py
     """
 
@@ -26,7 +26,7 @@ class TestAntaresDataservice(TestCase):
         """
         form_parameters = {'query_save': True,
                            'query_name': 'a mess',
-                           'data_service': 'Antares',
+                           'data_service': 'ANTARES',
                            'ztfid': 'ZTF_name',
                            'antid': 'Ant_name',
                            'tag': ['lc_feature_extractor', 'sso_candidates'],
