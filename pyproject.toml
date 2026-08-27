@@ -1,6 +1,6 @@
 [project]
 name = "tom-antares"
-description = "Antares Data Service module for the TOM Toolkit"
+description = "ANTARES Data Service module for the TOM Toolkit"
 authors = [
     {name = "TOM Toolkit Project", email = "tomtoolkit-maintainers@lco.global"},
 ]
