@@ -172,10 +172,12 @@ class AntaresDataService(DataService):
     def query_service(self, data, **kwargs):
         try:
             if data.get('ztfid'):
-                self.query_results = [get_by_ztf_object_id(data['ztfid'])]
+                locus = get_by_ztf_object_id(data['ztfid'])
+                self.query_results = [locus] if locus else []
                 return self.query_results
             elif data.get('antid'):
-                self.query_results = [get_by_id(data['antid'])]
+                locus = get_by_id(data['antid'])
+                self.query_results = [locus] if locus else []
                 return self.query_results
             elif data.get('elsquery'):
                 self.query_results = antares_client.search.search(data['elsquery'])
