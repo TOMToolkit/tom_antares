@@ -3,10 +3,10 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/6812def88cd5479ab4b833eedd52217f)](https://www.codacy.com/gh/TOMToolkit/tom_antares/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=TOMToolkit/tom_antares&amp;utm_campaign=Badge_Grade)
 [![Coverage Status](https://coveralls.io/repos/github/TOMToolkit/tom_antares/badge.svg?branch=main)](https://coveralls.io/github/TOMToolkit/tom_antares?branch=main)
 
-# Antares TOM Broker Module
+# ANTARES TOM Broker Module
 
-This module adds [Antares](https://antares.noao.edu/) support to the TOM
-Toolkit. Using this module TOMs can query and listen to Antares streams.
+This module adds [ANTARES](https://antares.noao.edu/) support to the TOM
+Toolkit. Using this module TOMs can query and listen to ANTARES streams.
 
 ## Installation
 
