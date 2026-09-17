@@ -172,10 +172,12 @@ class AntaresDataService(DataService):
     def query_service(self, data, **kwargs):
         try:
             if data.get('ztfid'):
-                self.query_results = get_by_ztf_object_id(data['ztfid'])
+                locus = get_by_ztf_object_id(data['ztfid'])
+                self.query_results = [locus] if locus else []
                 return self.query_results
             elif data.get('antid'):
-                self.query_results = get_by_id(data['antid'])
+                locus = get_by_id(data['antid'])
+                self.query_results = [locus] if locus else []
                 return self.query_results
             elif data.get('elsquery'):
                 self.query_results = antares_client.search.search(data['elsquery'])
@@ -200,43 +202,53 @@ class AntaresDataService(DataService):
     def query_targets(self, data):
         loci = self.query_service(data)
         targets = []
-        if loci:
-            if isinstance(loci, antares_client.models.Locus):
-                loci = [loci]
-            for i, locus in enumerate(loci):
-                result = self.serialize_locus(data, locus)
-                targets.append(result)
-                if i+1 == data.get('max_objects', 20):
-                    break
+        for i, locus in enumerate(loci):
+            result = self.serialize_locus(data, locus)
+            targets.append(result)
+            if i+1 == data.get('max_objects', 20):
+                break
         self.target_results = targets
         return targets
 
     def query_aliases(self, query_parameters=None, target=None, locus=None, **kwargs):
         """Set up and run a specialized query for retrieving alternate names from a DataService."""
-        if not locus:
-            locus = self.query_results
-        if not locus:
-            locus = self.query_service(query_parameters)
-        if not locus:
-            locus = self.query_service(self.build_query_parameters_from_target(target))
+        if locus:
+            loci = [locus]
+        elif self.query_results:
+            loci = self.query_results
+        elif query_parameters:
+            loci = self.query_service(query_parameters)
+        elif target:
+            loci = self.query_service(self.build_query_parameters_from_target(target))
+        else:
+            return []
+
         aliases = []
-        aliases.append(locus.locus_id)
-        for id_key in ['ztf_object_id']:
-            alias = locus.properties.get(id_key)
-            if alias:
-                aliases.append(alias)
+        for locus in loci:
+            aliases.append(locus.locus_id)
+            for id_key in ['ztf_object_id']:
+                alias = locus.properties.get(id_key)
+                if alias:
+                    aliases.append(alias)
+            break  # do not include aliases from more than one locus
 
         return aliases
 
     def query_photometry(self, query_parameters, locus=None, **kwargs):
         """Convert the lightcurve pandas dataframe into a list of dictionaries."""
-        if not locus:
-            locus = self.query_results or self.query_service(query_parameters)
+        if locus:
+            loci = [locus]
+        else:
+            loci = self.query_results or self.query_service(query_parameters)
 
-        lightcurve = json.loads(locus.lightcurve.to_json(orient='records'))
+        photometry = []
+        for locus in loci:
+            lightcurve = json.loads(locus.lightcurve.to_json(orient='records'))
+            self.photometry_results[locus.locus_id] = lightcurve
+            photometry += lightcurve
+            break  # do not include photometry from more than one locus
 
-        self.photometry_results[locus.locus_id] = lightcurve
-        return lightcurve
+        return photometry
 
     def create_target_from_query(self, target_result, **kwargs):
         """Create a new target from the query results
