@@ -6,7 +6,6 @@ import antares_client
 import numpy as np
 from antares_client.search import get_available_tags, get_by_id, get_by_ztf_object_id
 from astropy.time import Time, TimezoneInfo
-from django.db import IntegrityError
 from tom_dataproducts.models import PhotometryReducedDatum
 from tom_dataservices.dataservices import DataService, QueryServiceError
 from tom_targets.models import Target
@@ -281,30 +280,18 @@ class AntaresDataService(DataService):
                 datum_details['limit'] = datum['ant_maglim']
             datum_details['filter'] = datum['ant_passband']
 
-            try:
-                reduced_datum, _ = PhotometryReducedDatum.objects.get_or_create(
-                    target=target,
-                    timestamp=Time(
-                        datum["time"], format="iso", scale="utc"
-                    ).to_datetime(TimezoneInfo()),
-                    telescope=self.surveys[datum['ant_survey']],
-                    source_name=self.name,
-                    brightness=datum_details.get("magnitude"),
-                    brightness_error=datum_details.get("error"),
-                    limit=datum_details.get("limit"),
-                    bandpass=datum_details["filter"],
-                )
-            except IntegrityError:
-                logger.warning(
-                    (
-                        "PhotometryReducedDatum already exists for target %s "
-                        "with time %s and bandpass %s. Skipping."
-                    ),
-                    target.name,
-                    datum["time"],
-                    datum_details["filter"],
-                )
-                continue
+            reduced_datum = PhotometryReducedDatum(
+                target=target,
+                timestamp=Time(
+                    datum["time"], format="iso", scale="utc"
+                ).to_datetime(TimezoneInfo()),
+                telescope=self.surveys[datum['ant_survey']],
+                source_name=self.name,
+                brightness=datum_details.get("magnitude"),
+                brightness_error=datum_details.get("error"),
+                limit=datum_details.get("limit"),
+                bandpass=datum_details["filter"],
+            )
             reduced_datums.append(reduced_datum)
 
-        return reduced_datums
+        return PhotometryReducedDatum.objects.bulk_create(reduced_datums, ignore_conflicts=True)
