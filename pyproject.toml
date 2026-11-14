@@ -13,9 +13,10 @@ license = {text = "GPL-3.0-only"}
 readme = "README.md"
 repository = "https://github.com/TOMToolkit/tom_antares"
 dynamic = ["version"]
-requires-python = ">=3.10.0,<3.14"
+requires-python = ">=3.11.0,<3.15"
 dependencies = [
-    "tomtoolkit (>=3.0.0,<4.0.0)",
+    "tomtoolkit @ git+https://github.com/TOMToolkit/tom_base.git@1652-python-310-eol-in-october-2026",
+    "bson @ git+https://github.com/py-bson/bson.git@4e6b4c206f7204034ef74bff8ae84a95d76d1684",
     "antares-client (>=2.0.0,<3.0.0)",
     "elasticsearch-dsl (>=8.18.0,<9.0.0)"
 ]
